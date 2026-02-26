@@ -1,3 +1,5 @@
+-- Nesta camada, são criadas as tabelas que receberão os dados brutos importados dos arquivos CSV.
+
 -- Criação da tabela de municípios na camada raw
 CREATE TABLE raw.cities (
     tom_city_code INTEGER,
