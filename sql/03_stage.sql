@@ -77,7 +77,7 @@ SELECT
     CAST(NULLIF(
         REGEXP_REPLACE(
             SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
--- Foi necessário utilizar expressões regulares para extrair apenas o número total de visitas prenatais.
+-- Foi necessário utilizar expressões regulares para extrair apenas o número total de nascimentos de acordo com cada categoria de visitas prenatais.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
     CAST(source_file AS TEXT) AS prenatal_visits
@@ -88,12 +88,14 @@ WHERE raw_data LIKE '%;%'
 
 -------------------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS stage.mother_age;
+
 CREATE TABLE stage.mother_age AS
 SELECT
 -- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
--- Foi necessário utilizar expressões regulares para extrair apenas a idade da mãe.
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos de acordo com a idade da mãe.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
     CAST(source_file AS TEXT) AS mother_age
@@ -121,13 +123,15 @@ WHERE raw_data LIKE '%;%';
 
 -------------------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS stage.birth_weight;
+
 CREATE TABLE stage.birth_weight AS
 SELECT
 -- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
     CAST(NULLIF(
         REGEXP_REPLACE(
             SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
--- Foi necessário utilizar expressões regulares para extrair apenas o peso do bebê.
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos de acordo com o peso do bebê.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
     CAST(source_file AS TEXT) AS birth_weight
@@ -159,7 +163,7 @@ SELECT
 -- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
--- Foi necessário utilizar expressões regulares para extrair apenas o número total de mães com diferentes níveis de escolaridade.
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos de acordo com o nível de escolaridade da mãe.
     CAST(NULLIF(
         REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
     CAST(source_file AS TEXT) AS mother_education
@@ -169,3 +173,120 @@ WHERE raw_data LIKE '%;%'
     AND raw_data NOT ILIKE '%Fonte%';
 
 
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.pct_sewage AS
+SELECT
+ -- Foi necessário utilizar regex pra extrair apenas o código do ibge.
+-- Em seguida, foi utilizado left 6 para manter apenas os 6 primeiros dígitos do código ibge,
+-- pois neste arquivo o código vem com 7 dígitos (mesma lógica aplicada para cities, hdi e gini).
+-- A mesma lógica abaixo é utilizada nas tabelas pct_water e pct_waste_collection, já que a estrutura é exatamente igual.
+    CAST(NULLIF(
+        LEFT(
+            REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), 6), '') AS INT) AS ibge_code,
+-- Removidas as aspas da coluna porcentagem, e trocando vírgula por ponto
+-- Depois, o valor foi convertido para numeric.
+    CASE
+        WHEN REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') ~ '^[0-9]+(\.[0-9]+)?$'
+        THEN CAST(REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') AS NUMERIC(10,2))
+        ELSE NULL
+    END AS pct_sewage
+FROM raw.pct_sewage
+WHERE raw_data LIKE '%;%'
+-- Filtra apenas as linhas em que possuem dados, ignorando cabeçalhos, legendas, etc.
+    AND REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g') <> '';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.pct_water_supply AS
+SELECT
+    CAST(NULLIF(
+        LEFT(
+            REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), 6), '') AS INT) AS ibge_code,
+    CASE
+        WHEN REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') ~ '^[0-9]+(\.[0-9]+)?$'
+        THEN CAST(REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') AS NUMERIC(10,2))
+        ELSE NULL
+    END AS pct_water_supply
+FROM raw.pct_water_supply
+WHERE raw_data LIKE '%;%'
+    AND REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g') <> '';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.pct_waste_collection AS
+SELECT
+    CAST(NULLIF(
+        LEFT(
+            REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), 6), '') AS INT) AS ibge_code,
+    CASE
+        WHEN REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') ~ '^[0-9]+(\.[0-9]+)?$'
+        THEN CAST(REPLACE(TRIM(BOTH '"' FROM SPLIT_PART(raw_data, ';', 5)), ',', '.') AS NUMERIC(10,2))
+        ELSE NULL
+    END AS pct_waste_collection
+FROM raw.pct_waste_collection
+WHERE raw_data LIKE '%;%'
+    AND REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g') <> '';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.congenital_anomaly_births AS
+SELECT
+-- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos com anomalia congênita.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
+    CAST(source_file AS TEXT) AS congenital_anomaly_births
+FROM raw.congenital_anomaly_births
+WHERE raw_data LIKE '%;%'
+    AND raw_data NOT ILIKE '%IGNORADO%'
+    AND raw_data NOT ILIKE '%Fonte%';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.gestational_age AS
+SELECT
+-- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos de acordo com o período gestacional.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births,
+    CAST(source_file AS TEXT) AS gestational_age
+FROM raw.gestational_age
+WHERE raw_data LIKE '%;%'
+    AND raw_data NOT ILIKE '%IGNORADO%'
+    AND raw_data NOT ILIKE '%Fonte%';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.births_non_white_mothers AS
+SELECT
+-- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
+-- Foi necessário utilizar expressões regulares para extrair o total de nascimentos onde as mães são não brancas.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_births_non_white_mothers
+FROM raw.births_non_white_mothers
+WHERE raw_data LIKE '%;%'
+    AND raw_data NOT ILIKE '%IGNORADO%'
+    AND raw_data NOT ILIKE '%Fonte%';
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE stage.primary_care_units AS
+SELECT
+-- Foi necessário utilizar expressões regulares para extrair apenas o código IBGE.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 1), '[^0-9]', '', 'g'), '') AS INT) AS ibge_code,
+-- Foi necessário utilizar expressões regulares para extrair o total de postos de saúde/UBS por município.
+    CAST(NULLIF(
+        REGEXP_REPLACE(SPLIT_PART(raw_data, ';', 2), '[^0-9]', '', 'g'), '') AS INT) AS total_primary_care_units
+FROM raw.primary_care_units
+WHERE raw_data LIKE '%;%'
+    AND raw_data NOT ILIKE '%IGNORADO%'
+    AND raw_data NOT ILIKE '%Fonte%';

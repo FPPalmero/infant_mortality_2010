@@ -167,6 +167,14 @@ UPDATE raw.mother_age
 SET source_file = '30_to_39_age'
 WHERE source_file IS NULL;
 
+COPY raw.mother_age (raw_data)
+FROM 'domain/mother_age_40_to_49.csv'
+ENCODING 'WIN1252';
+
+UPDATE raw.mother_age
+SET source_file = '40_to_49_age'
+WHERE source_file IS NULL;
+
 
 -------------------------------------------------------------------------------------------------
 
@@ -227,6 +235,14 @@ ENCODING 'WIN1252';
 
 UPDATE raw.birth_weight
 SET source_file = '4000g_or_more'
+WHERE source_file IS NULL;
+
+COPY raw.birth_weight (raw_data)
+FROM 'domain/birth_weight_less_than_1000g.csv'
+ENCODING 'WIN1252';
+
+UPDATE raw.birth_weight
+SET source_file = 'less_than_1000g'
 WHERE source_file IS NULL;
 
 -------------------------------------------------------------------------------------------------
@@ -296,3 +312,96 @@ ENCODING 'WIN1252';
 UPDATE raw.mother_education
 SET source_file = '12_more_years'
 WHERE source_file IS NULL;
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.pct_sewage(
+    raw_data TEXT
+);
+
+COPY raw.pct_sewage
+FROM 'domain/pct_sewage.csv'
+ENCODING 'UTF8';
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.pct_water_supply(
+    raw_data TEXT
+);
+
+COPY raw.pct_water_supply
+FROM 'domain/pct_water_supply.csv'
+ENCODING 'UTF8';
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.pct_waste_collection(
+    raw_data TEXT
+);
+
+COPY raw.pct_waste_collection
+FROM 'domain/pct_waste_collection.csv'
+ENCODING 'UTF8';
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.congenital_anomaly_births(
+    raw_data TEXT
+);
+
+-- Importação dos dados de nascimentos com anomalia congênita para a tabela raw.congenital_anomaly_births
+COPY raw.congenital_anomaly_births
+FROM 'domain/congenital_anomaly_births.csv'
+ENCODING 'WIN1252';
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.gestational_age(
+    raw_data TEXT, 
+    source_file TEXT
+    );
+
+-- Importação dos dados de período gestacional para a tabela raw.gestational_age
+COPY raw.gestational_age (raw_data)
+FROM 'domain/gestational_age_less_than_32_weeks.csv'
+ENCODING 'WIN1252';
+
+-- Atribuição das informações do arquivo original para a coluna source_file
+UPDATE raw.gestational_age
+SET source_file = 'less_than_32_weeks';
+
+
+COPY raw.gestational_age (raw_data)
+FROM 'domain/gestational_age_32_to_36_weeks.csv'
+ENCODING 'WIN1252';
+
+UPDATE raw.gestational_age
+SET source_file = '32_to_36_weeks'
+WHERE source_file IS NULL;
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.births_non_white_mothers(
+    raw_data TEXT
+);
+
+-- Importação do total de nascimentos com mães não brancas
+COPY raw.births_non_white_mothers
+FROM 'domain/births_non_white_mothers.csv'
+ENCODING 'WIN1252';
+
+
+-------------------------------------------------------------------------------------------------
+
+CREATE TABLE raw.primary_care_units(
+    raw_data TEXT
+);
+
+-- Importação do total de postos de saúde/UBS por município
+COPY raw.primary_care_units
+FROM 'domain/primary_care_units.csv'
+ENCODING 'WIN1252';

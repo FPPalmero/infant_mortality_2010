@@ -196,3 +196,146 @@ LEFT JOIN (
     FROM stage.birth_weight
     GROUP BY ibge_code
 ) bw ON b.ibge_code = bw.ibge_code;
+
+
+
+-------------------------------------------------------------------------------------------------
+
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN birth_weight_less_than_1000g INT;
+
+UPDATE prod.infant_mortality im
+SET birth_weight_less_than_1000g = bw.birth_weight_less_than_1000g
+FROM (
+    SELECT
+        ibge_code,
+        SUM(CASE WHEN birth_weight = 'less_than_1000g' THEN total_births END) AS birth_weight_less_than_1000g
+    FROM stage.birth_weight
+    GROUP BY ibge_code
+) bw
+WHERE im.ibge_code = bw.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN mother_age_40_to_49 INT;
+
+UPDATE prod.infant_mortality im
+SET mother_age_40_to_49 = ma.mother_age_40_to_49
+FROM (
+    SELECT
+        ibge_code,
+        SUM(CASE WHEN mother_age = '40_to_49_age' THEN total_births END) AS mother_age_40_to_49
+    FROM stage.mother_age
+    GROUP BY ibge_code
+) ma
+WHERE im.ibge_code = ma.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de porcentagem de residências com esgotamento adequado segundo o ibge 
+-- O ibge considera esgoto adequado: (rede geral de esgoto/pluvial/fossa séptica)
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN pct_sewage NUMERIC(10,2);
+
+UPDATE prod.infant_mortality im
+SET pct_sewage = ps.pct_sewage
+FROM stage.pct_sewage ps
+WHERE im.ibge_code = ps.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de porcentagem de residências com abastecimento de água adequado segundo o ibge 
+-- O ibge considera abastecimento de água adequado: (rede geral)
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN pct_water_supply NUMERIC(10,2);
+
+UPDATE prod.infant_mortality im
+SET pct_water_supply = pw.pct_water_supply
+FROM stage.pct_water_supply pw
+WHERE im.ibge_code = pw.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de porcentagem de residências com coleta de lixo
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN pct_waste_collection NUMERIC(10,2);
+
+UPDATE prod.infant_mortality im
+SET pct_waste_collection = pwc.pct_waste_collection
+FROM stage.pct_waste_collection pwc
+WHERE im.ibge_code = pwc.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de nascimentos com anomalia congênita
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN congenital_anomaly_births INT;
+
+UPDATE prod.infant_mortality im
+SET congenital_anomaly_births = cab.congenital_anomaly_births
+FROM (
+    SELECT
+        ibge_code,
+        SUM(congenital_anomaly_births) AS congenital_anomaly_births
+    FROM stage.congenital_anomaly_births
+    GROUP BY ibge_code
+) cab
+WHERE im.ibge_code = cab.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de nascimentos com período gestacional menor que 32 semanas e entre 32 e 36 semanas
+-- O período menor que 32 semanas é considerado muito prematuro.
+-- O período entre 32 e 36 semanas é considerado prematuro.
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN gestational_age_less_than_32_weeks INT,
+ADD COLUMN gestational_age_32_to_36_weeks INT;
+
+UPDATE prod.infant_mortality im
+SET 
+    gestational_age_less_than_32_weeks = ga.gestational_age_less_than_32_weeks,
+    gestational_age_32_to_36_weeks    = ga.gestational_age_32_to_36_weeks
+FROM (
+    SELECT
+        ibge_code,
+        SUM(CASE WHEN gestational_age = 'less_than_32_weeks' THEN total_births END) AS gestational_age_less_than_32_weeks,
+        SUM(CASE WHEN gestational_age = '32_to_36_weeks'   THEN total_births END) AS gestational_age_32_to_36_weeks
+    FROM stage.gestational_age
+    GROUP BY ibge_code
+) ga
+WHERE im.ibge_code = ga.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de nascimentos onde as mães são não brancas
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN births_non_white_mothers INT;
+
+UPDATE prod.infant_mortality im
+SET births_non_white_mothers = bnw.births_non_white_mothers
+FROM (
+    SELECT
+        ibge_code,
+        SUM(total_births) AS births_non_white_mothers
+    FROM stage.births_non_white_mothers
+    GROUP BY ibge_code
+) bnw
+WHERE im.ibge_code = bnw.ibge_code;
+
+-------------------------------------------------------------------------------------------------
+
+-- Adicionada coluna de total de postos de saúde/UBS por município
+ALTER TABLE prod.infant_mortality 
+ADD COLUMN primary_care_units INT;
+
+UPDATE prod.infant_mortality im
+SET primary_care_units = bnw.primary_care_units
+FROM (
+    SELECT
+        ibge_code,
+        SUM(total_primary_care_units) AS primary_care_units
+    FROM stage.primary_care_units
+    GROUP BY ibge_code
+) bnw
+WHERE im.ibge_code = bnw.ibge_code;
