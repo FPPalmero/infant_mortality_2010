@@ -1,2 +1,4 @@
 .venv
 .env
+catboost_info
+.ipynb_checkpoints
