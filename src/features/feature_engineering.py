@@ -1,5 +1,5 @@
 import pandas as pd
-from config import pct_cols, cols_to_1000_pop, region_map
+from src.config import pct_cols, cols_to_1000_pop, region_map
 
 
 def scale_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -22,7 +22,7 @@ def add_region(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
+def get_new_features(df: pd.DataFrame) -> pd.DataFrame:
 
     df = scale_cols(df)
     df = remove_invalid_pct_rows(df)

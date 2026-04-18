@@ -116,7 +116,6 @@ cols_to_drop_before_split = [
     "infant_mortality_rate",
     "total_births",
     "infant_deaths",
-    "index",
     "city_name",
 ]
 
@@ -133,4 +132,8 @@ multicollinear_cols = [
 
 cat_cols = ["state_code", "region"]
 
-model_path = "../models/ridge_pipeline.pkl"
+fine_tuning_params = {
+    "model__alpha": [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 150, 200],
+}
+
+model_path = "models/ridge_pipeline.pkl"

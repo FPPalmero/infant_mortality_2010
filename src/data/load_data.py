@@ -2,7 +2,9 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 from sqlalchemy import create_engine
-from config import db_cities, db_infant_mortality, db_join
+from src.config import db_cities, db_infant_mortality, db_join
+from src.data.preprocess import preprocess_data
+from src.features.feature_engineering import get_new_features
 
 load_dotenv()
 
@@ -24,4 +26,11 @@ def load_data() -> pd.DataFrame:
             f"SELECT * FROM {db_infant_mortality}", connection
         )
         df = pd.merge(cities_df, infant_mortality_df, on=db_join)
+    return df
+
+
+def get_data():
+    df = load_data()
+    df = preprocess_data(df)
+    df = get_new_features(df)
     return df

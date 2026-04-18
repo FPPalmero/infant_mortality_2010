@@ -1,5 +1,5 @@
 import pandas as pd
-from config import cols_to_drop, float_to_int_cols, outlier_threshold
+from src.config import cols_to_drop, float_to_int_cols, outlier_threshold
 
 
 def drop_columns(df: pd.DataFrame) -> pd.DataFrame:
