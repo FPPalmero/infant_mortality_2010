@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from src.api.routes import evaluate
+from src.api.routes import predict
 
 app = FastAPI(
     title="Infant Mortality Prediction API",
@@ -7,3 +8,4 @@ app = FastAPI(
 )
 
 app.include_router(evaluate.router)
+app.include_router(predict.router)

@@ -20,7 +20,7 @@ from src.config import (
 
 def split_model_data(df: pd.DataFrame):
 
-    X = df.drop(cols_to_drop_before_split)
+    X = df.drop(cols_to_drop_before_split, axis=1)
     y = df[target]
 
     return X, y

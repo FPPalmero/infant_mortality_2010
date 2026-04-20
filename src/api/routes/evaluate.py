@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from src.api.dependencies import model, df
 from src.ml.evaluate import evaluate_model
 from src.models.schemas import EvaluationResponse
@@ -12,7 +11,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    description="Endpoint to evaluate the model performance",
+    description="Evaluate the model performance",
     response_model=EvaluationResponse,
 )
 def evaluate():
