@@ -10,7 +10,6 @@ from src.ml.mappings import (
     mother_age_map,
     mother_education_map,
     prenatal_visits_map,
-    racial_distribution_map,
     socioeconomic_map,
 )
 from src.models.schemas import PredictionRequest, PredictionResponse
@@ -41,7 +40,7 @@ def predict(request: PredictionRequest) -> PredictionResponse:
     features.update(gestational_age_map[request.gestational_age])
     features.update(congenital_anomaly_map[request.congenital_anomaly])
     features.update(healthcare_access_map[request.healthcare_access])
-    features.update(racial_distribution_map[request.racial_distribution])
+    features.update({"births_non_white_mothers": 61.0})
 
     df = pd.DataFrame([features])
 

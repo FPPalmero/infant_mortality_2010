@@ -28,7 +28,6 @@ class PredictionRequest(BaseModel):
     gestational_age: Level
     congenital_anomaly: Level
     healthcare_access: Level
-    racial_distribution: Level
     state_code: str
 
 

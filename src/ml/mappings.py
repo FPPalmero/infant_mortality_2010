@@ -174,7 +174,7 @@ birth_weight_map = {
 
 gestational_age_map = {
     "very_low": {
-        "gestational_age_less_than_32_weeks": 4.0,
+        "gestational_age_less_than_32_weeks": 6.0,
         "gestational_age_32_to_36_weeks": 15.0,
     },
     "low": {
