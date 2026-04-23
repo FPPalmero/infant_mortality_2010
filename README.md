@@ -3,6 +3,19 @@
 Projeto de ciência de dados e engenharia de ML que analisa e prevê a taxa de mortalidade infantil nos municípios brasileiros com base em dados do censo de 2010, coletados do IBGE e DATASUS.
 
 ---
+ 
+## Demo
+
+A demo está hospedada no plano gratuito do Render. Após um período de inatividade, pode levar até 2 minutos para inicializar. Aguarde o carregamento completo antes de interagir com a aplicação.
+ 
+| Serviço | URL |
+|---|---|
+| Streamlit | [infant-mortality-app.onrender.com](https://infant-mortality-app.onrender.com) |
+| FastAPI (Swagger) | [infant-mortality-api.onrender.com/docs](https://infant-mortality-api.onrender.com/docs) |
+
+> **ATENÇÃO:** Para rodar localmente é necessário configurar um banco PostgreSQL e executar os scripts de ETL disponíveis em `sql/`. Para apenas testar a aplicação, acesse a demo pública acima.
+ 
+---
 
 ## 1. Sobre o Projeto
 
@@ -69,7 +82,8 @@ infant_mortality_2010/
 │   │
 │   ├── config.py                   # Variáveis gerais, colunas e hiperparâmetros
 │   ├── main.py                     # Orquestrador: sobe FastAPI + Streamlit
-├── Dockerfile                      # Configuração do arquivo docker
+├── Dockerfile.api                  # Configuração do arquivo docker do swagger
+├── Dockerfile.streamlit            # Configuração do arquivo docker do streamlit
 ├── requirements.txt                # Dependências para build da imagem docker
 ├── environment.yml                 # Ambiente conda para desenvolvimento local
 └── .env                            # Variáveis de ambiente
@@ -124,7 +138,7 @@ Exibe as métricas de avaliação do modelo (R² treino e teste, RMSE vs Dummy e
 
 ## 5. Limitações do Modelo
 
-- **Dados agregados por município:** informações individuais relevantes são perdidas (vacinação, plano de saúde, qualidade do atendimento, causas externas de morte)
+- **Dados agregados por município:** O modelo trabalha com dados agregados por município, o que limita naturalmente o poder preditivo. Informações individuais relevantes como vacinação, condições de saúde da criança, qualidade do atendimento médico e causas externas de morte (acidentes, afogamentos) são perdidas na agregação.
 - **Dados estáticos do censo 2010:** o modelo não captura mudanças ocorridas após esse período
 - **Distribuição racial:** a variável `births_non_white_mothers` foi removida do simulador pois, após controlar fatores como IDH e renda, o modelo apresentou comportamento contrário ao esperado, resultado de multicolinearidade com outras features socioeconômicas
 - **Comportamento por estado:** ao fixar todos os indicadores no mesmo nível, alguns estados podem apresentar taxas inesperadas, pois o modelo Ridge penaliza o coeficiente do estado quando fatores como IDH e renda já explicam as diferenças regionais
@@ -136,7 +150,7 @@ Exibe as métricas de avaliação do modelo (R² treino e teste, RMSE vs Dummy e
 ### Pré-requisitos
 - Docker instalado
 - Banco PostgreSQL configurado com os scripts SQL disponíveis em `sql/`
-- Arquivo `.env` configurado (veja `.env.example`)
+- Arquivo `.env` configurado
 
 ### Com Docker
 
@@ -175,7 +189,7 @@ python -m src.main
 
 ## 7. Variáveis de Ambiente
 
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+Crie um arquivo `.env` na raiz do projeto com as variáveis abaixo e preencha os valores com as configurações do seu banco PostgreSQL:
 
 ```
 DB_USER=
