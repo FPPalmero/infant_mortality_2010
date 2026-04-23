@@ -1,5 +1,5 @@
 import streamlit as st
-from src.app.evaluation import load_df
+from src.data.load_data import get_data
 from src.visualization.plots import (
     plot_target_distribution,
     plot_correlation_heatmap,
@@ -8,6 +8,11 @@ from src.visualization.plots import (
     plot_prenatal_scatter,
 )
 from src.app.descriptions import eda_descriptions
+
+
+@st.cache_data
+def load_cached_df():
+    return get_data()
 
 
 def render_tab_eda():
@@ -25,7 +30,7 @@ def render_tab_eda():
     _, col_select, _ = st.columns([2, 3, 2])
 
     with col_select:
-        df = load_df()
+        df = load_cached_df()
 
         option = st.selectbox(
             "Selecione a análise",
