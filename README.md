@@ -126,7 +126,7 @@ Exibe as métricas de avaliação do modelo (R² treino e teste, RMSE vs Dummy e
 
 - **Dados agregados por município:** informações individuais relevantes são perdidas (vacinação, plano de saúde, qualidade do atendimento, causas externas de morte)
 - **Dados estáticos do censo 2010:** o modelo não captura mudanças ocorridas após esse período
-- **Distribuição racial:** a variável `births_non_white_mothers` foi removida do simulador pois, após controlar fatores como IDH e renda, o modelo apresentou comportamento contrário ao esperado — resultado de multicolinearidade com outras features socioeconômicas
+- **Distribuição racial:** a variável `births_non_white_mothers` foi removida do simulador pois, após controlar fatores como IDH e renda, o modelo apresentou comportamento contrário ao esperado, resultado de multicolinearidade com outras features socioeconômicas
 - **Comportamento por estado:** ao fixar todos os indicadores no mesmo nível, alguns estados podem apresentar taxas inesperadas, pois o modelo Ridge penaliza o coeficiente do estado quando fatores como IDH e renda já explicam as diferenças regionais
 
 ---
@@ -140,12 +140,18 @@ Exibe as métricas de avaliação do modelo (R² treino e teste, RMSE vs Dummy e
 
 ### Com Docker
 
-```bash
-# Build da imagem
-docker build -t infant_mortality .
+O projeto possui dois Dockerfiles separados, um para a API e outro para o Streamlit. Em dois terminais, faça o build e rode o container.
 
-# Rodar o container
-docker run -p 8000:8000 -p 8501:8501 --env-file .env infant_mortality
+**API (FastAPI):**
+```bash
+docker build -f Dockerfile.api -t infant-api .
+docker run -p 8000:8000 --env-file .env infant-api
+```
+
+**Streamlit:**
+```bash
+docker build -f Dockerfile.streamlit -t infant-streamlit .
+docker run -p 8501:8501 --env-file .env infant-streamlit
 ```
 
 Acesse:
